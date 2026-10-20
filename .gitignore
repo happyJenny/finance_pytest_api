@@ -1,0 +1,32 @@
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*$py.class
+
+# pytest 缓存
+.pytest_cache/
+.cache/
+
+# 虚拟环境
+venv/
+.venv/
+env/
+ENV/
+
+# 其他常见
+*.egg-info/
+dist/
+build/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+
+# 配置文件
+config/env.yaml
+
+# debug 文件
+*.apk
