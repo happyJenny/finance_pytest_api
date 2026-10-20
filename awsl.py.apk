@@ -1,0 +1,79 @@
+from base64 import b64encode
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+OUTPUT = ROOT / "all_files_record.txt"
+SCRIPT_FILE = Path(__file__).resolve()
+
+# 需要跳过的目录名（统一小写比较，含点前缀的也写全）
+SKIP_DIR_NAMES = {
+    "api",
+    "deprecatedapi",
+    "derpricatedapi",
+    "deprecatedcases",
+    "cache",
+    ".vscode",
+    "vscode",
+    "venv",
+    ".venv",
+    "cases1-3",
+    "cases4_1_fixutre",
+}
+
+SKIP_SUFFIXES = {".apk"}
+
+# 大文件阈值：超过则只记录 Base64 前 N 字节？这里简单跳过超大文件
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+
+def _should_skip(p: Path) -> bool:
+    if p == SCRIPT_FILE or p == OUTPUT:
+        return True
+    if not p.is_file():
+        return True
+
+    if p.suffix.casefold() in SKIP_SUFFIXES:
+        return True
+
+    try:
+        rel = p.relative_to(ROOT)
+    except ValueError:
+        return True
+
+    parts_lower = [part.casefold() for part in rel.parts]
+
+    for part_lower in parts_lower:
+        if part_lower in SKIP_DIR_NAMES:
+            return True
+        if "cache" in part_lower:
+            return True
+
+    # 超大文件可选跳过
+    # if p.stat().st_size > MAX_FILE_SIZE:
+    #     return True
+
+    return False
+
+
+def main() -> None:
+    with OUTPUT.open("w", encoding="utf-8", newline="") as record:
+        for path in sorted(ROOT.rglob("*")):
+            if _should_skip(path):
+                continue
+
+            data = path.read_bytes()
+            record.write(f"\n{'=' * 80}\n文件：{path.relative_to(ROOT)}\n{'=' * 80}\n")
+
+            try:
+                record.write(data.decode("utf-8"))
+            except UnicodeDecodeError:
+                record.write("[二进制文件，Base64 内容]\n")
+                record.write(b64encode(data).decode("ascii"))
+
+            record.write("\n")
+
+    print(f"已完成，文件已写入：{OUTPUT}")
+
+
+if __name__ == "__main__":
+    main()

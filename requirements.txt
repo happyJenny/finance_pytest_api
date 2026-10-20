@@ -1,0 +1,6 @@
+pytest==8.3.3
+requests==2.32.3
+psycopg2-binary==2.9.9
+Pyyaml==6.0.3
+pytest-xdist==3.6.1
+jsonschema==4.23.0
